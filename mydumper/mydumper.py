@@ -30,7 +30,7 @@ max_days_delta = args.max_days_delta
 
 def make_dump():
     date_string = str(datetime.now()).replace(" ", "_")
-    dump_file = "%s-%s.sql" % (db, date_string)
+    dump_file = "%s_%s.sql" % (db, date_string)
     dump_file = os.path.join(dump_dir, dump_file)
 
     dump_cmd = "mysqldump -u %s -p%s -h %s %s > %s" % (user, password, host, db, dump_file)
