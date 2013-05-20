@@ -4,76 +4,91 @@ import os, time
 from datetime import datetime, timedelta
 import argparse
 
-parser = argparse.ArgumentParser(
-    description="Simple MySQL dumper.",
-    add_help=False
-)
+class Dumper():
 
-parser.add_argument("database")
-parser.add_argument("-u", "--user", required=True)
-parser.add_argument("-p", "--password", default='')
-parser.add_argument("-h", "--host", default='localhost')
-parser.add_argument("-d", "--dump-dir", required=True)
-parser.add_argument("-m", "--max-dumps-qty", type=int, default=14)
-parser.add_argument("-M", "--max-days-delta", type=int, default=7)
+    def __init__(self, description, dump_cmd_pattern):
+        self.description = description
+        self.dump_cmd_pattern = dump_cmd_pattern
 
-args = parser.parse_args()
+    def make_dump(self, user, password, db, host, dump_dir):
+        date_string = str(datetime.now()).replace(" ", "_")
+        dump_file = "%s__%s.sql" % (db, date_string)
+        dump_file = os.path.join(dump_dir, dump_file)
 
-db = args.database
-user = args.user
-password = args.password
-host = args.host
+        dump_cmd = self.dump_cmd_pattern % (user, password, host, db, dump_file)
 
-dump_dir = os.path.expanduser(args.dump_dir)
-max_dumps_qty = args.max_dumps_qty
-max_days_delta = args.max_days_delta
+        os.system(dump_cmd)
 
-def make_dump():
-    date_string = str(datetime.now()).replace(" ", "_")
-    dump_file = "%s_%s.sql" % (db, date_string)
-    dump_file = os.path.join(dump_dir, dump_file)
+    def clear_dumps(self, db, dump_dir, max_dumps_qty, max_days_delta):
+        dumps = []
+        for dump_file in os.listdir(dump_dir):
+            if dump_file.startswith("%s__" % db):
+                date_begin = len(db) + 2
+                date_string = dump_file[date_begin:]
+                dumps.append(
+                    (dump_file, datetime.strptime(date_string, "%Y-%m-%d_%H:%M:%S.%f.sql"))
+                )
+        dumps = sorted(dumps, key=lambda dump: dump[1])
+        dumps.reverse()
 
-    dump_cmd = "mysqldump -u %s -p%s -h %s %s > %s" % (user, password, host, db, dump_file)
+        to_delete_1 = [] # Deleting by max qty
+        to_delete_2 = [] # Deleting by max days delta
 
-    os.system(dump_cmd)
+        if max_dumps_qty:
+            for i, dump in enumerate(dumps):
+                if i > max_dumps_qty - 1:
+                    to_delete_1.append(dump)
+            for dump in to_delete_1:
+                dumps.remove(dump)
 
-def clear_dumps():
-    dumps = []
-    for dump_file in os.listdir(dump_dir):
-        date_string = "_".join(dump_file.split("_")[1:])
-        dumps.append(
-            (dump_file, datetime.strptime(date_string, "%Y-%m-%d_%H:%M:%S.%f.sql"))
+        if max_days_delta:
+
+            cut_date = datetime.now() - timedelta(days=max_days_delta)
+
+            for dump in dumps:
+                if dump[1] < cut_date:
+                    to_delete_2.append(dump)
+            for dump in to_delete_2:
+                dumps.remove(dump)
+
+        to_delete = to_delete_1
+        to_delete.extend(to_delete_2)
+
+        for dump in to_delete:
+            dump_path = os.path.join(dump_dir, dump[0])
+            os.remove(dump_path)
+
+    def run(self):
+        parser = argparse.ArgumentParser(
+            description=self.description,
+            add_help=False
         )
-    dumps = sorted(dumps, key=lambda dump: dump[1])
-    dumps.reverse()
 
-    to_delete_1 = [] # Deleting by max qty
-    to_delete_2 = [] # Deleting by max days delta
+        parser.add_argument("database")
+        parser.add_argument("-u", "--user", required=True)
+        parser.add_argument("-p", "--password", default='')
+        parser.add_argument("-h", "--host", default='localhost')
+        parser.add_argument("-d", "--dump-dir", required=True)
+        parser.add_argument("-m", "--max-dumps-qty", type=int, default=14)
+        parser.add_argument("-M", "--max-days-delta", type=int, default=7)
 
-    if max_dumps_qty:
-        for i, dump in enumerate(dumps):
-            if i > max_dumps_qty - 1:
-                to_delete_1.append(dump)
-        for dump in to_delete_1:
-            dumps.remove(dump)
+        args = parser.parse_args()
 
-    if max_days_delta:
+        db = args.database
+        user = args.user
+        password = args.password
+        host = args.host
 
-        cut_date = datetime.now() - timedelta(days=max_days_delta)
+        dump_dir = os.path.expanduser(args.dump_dir)
+        max_dumps_qty = args.max_dumps_qty
+        max_days_delta = args.max_days_delta
 
-        for dump in dumps:
-            if dump[1] < cut_date:
-                to_delete_2.append(dump)
-        for dump in to_delete_2:
-            dumps.remove(dump)
-
-    to_delete = to_delete_1
-    to_delete.extend(to_delete_2)
-
-    for dump in to_delete:
-        dump_path = os.path.join(dump_dir, dump[0])
-        os.remove(dump_path)
+        self.make_dump(user,password,db,host,dump_dir)
+        self.clear_dumps(db,dump_dir,max_dumps_qty,max_days_delta)
 
 def main():
-    make_dump()
-    clear_dumps()
+    dumper = Dumper(
+        "Simple MySQL dumper.",
+        "mysqldump -u %s -p%s -h %s %s > %s"
+    )
+    dumper.run()
