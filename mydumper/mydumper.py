@@ -40,7 +40,7 @@ def make_dump():
 def clear_dumps():
     dumps = []
     for dump_file in os.listdir(dump_dir):
-        date_string = "-".join(dump_file.split("-")[1:4])
+        date_string = "_".join(dump_file.split("_")[1:])
         dumps.append(
             (dump_file, datetime.strptime(date_string, "%Y-%m-%d_%H:%M:%S.%f.sql"))
         )
