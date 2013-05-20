@@ -29,10 +29,10 @@ Usage
                     database
     $ mydumper -u john -p secret -m 10 -M 3 test_db
 
-When using mydumper (installed with pip and virtualenv) with cron it can be necessary
-to source virtualenv activate script before. For example:
+If you will use mydumper installed with pip and virtualenv in crontab file
+it will looks like following example:
 
 ```shell
 # Crontab
-0 */1 * * * * source /home/john/.virtualenvs/default/bin/activate && mydumper -u john -p secret -m 10 -M 3 test_db
+0 */1 * * * * /home/john/.virtualenvs/default/bin/mydumper -u john -p secret -m 10 -M 3 test_db
 ```
