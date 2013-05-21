@@ -32,10 +32,8 @@ Usage
 If you will use mydumper installed with pip and virtualenv in crontab file
 it will looks like following example:
 
-```shell
-# Crontab
-0 */1 * * * * /home/john/.virtualenvs/default/bin/mydumper -u john -p secret -m 10 -M 3 test_db
-```
+    # Crontab
+    0 */1 * * * * /home/john/.virtualenvs/default/bin/mydumper -u john -p secret -m 10 -M 3 test_db
 
 See also
 --------
