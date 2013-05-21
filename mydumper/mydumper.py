@@ -6,9 +6,10 @@ import argparse
 
 class Dumper():
 
-    def __init__(self, description, dump_cmd_pattern):
+    def __init__(self, description, dump_cmd_pattern, with_password=True):
         self.description = description
         self.dump_cmd_pattern = dump_cmd_pattern
+        self.with_password = with_password
 
     def make_dump(self, user, password, db, host, dump_dir):
         date_string = str(datetime.now()).replace(" ", "_")
@@ -69,7 +70,8 @@ class Dumper():
 
         parser.add_argument("database")
         parser.add_argument("-u", "--user", required=True)
-        parser.add_argument("-p", "--password", default='')
+        if self.with_password:
+            parser.add_argument("-p", "--password", default='')
         parser.add_argument("-h", "--host", default='localhost')
         parser.add_argument("-d", "--dump-dir", required=True)
         parser.add_argument("-m", "--max-dumps-qty", type=int, default=14)
@@ -79,8 +81,12 @@ class Dumper():
 
         db = args.database
         user = args.user
-        password = args.password
         host = args.host
+
+        if self.with_password:
+            password = args.password
+        else:
+            password = ''
 
         dump_dir = os.path.expanduser(args.dump_dir)
         max_dumps_qty = args.max_dumps_qty

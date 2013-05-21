@@ -9,7 +9,7 @@ Mydumper allows you:
 Installation
 ------------
 
-> Is recommended to install syncle with [pip](http://www.pip-installer.org) and [virtualenv](http://www.virtualenv.org/), but you can also use any other [method](http://wiki.python.org/moin/CheeseShopTutorial) of Python package installing.
+> Is recommended to install mydumper with [pip](http://www.pip-installer.org) and [virtualenv](http://www.virtualenv.org/), but you can also use any other [method](http://wiki.python.org/moin/CheeseShopTutorial) of Python package installing.
 
 ### From PyPI
 
@@ -36,3 +36,8 @@ it will looks like following example:
 # Crontab
 0 */1 * * * * /home/john/.virtualenvs/default/bin/mydumper -u john -p secret -m 10 -M 3 test_db
 ```
+
+See also
+--------
+
+* [Pgdumper](https://github.com/rdolgushin/pgdumper)
