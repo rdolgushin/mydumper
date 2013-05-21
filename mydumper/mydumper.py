@@ -15,7 +15,10 @@ class Dumper():
         dump_file = "%s__%s.sql" % (db, date_string)
         dump_file = os.path.join(dump_dir, dump_file)
 
-        dump_cmd = self.dump_cmd_pattern % (user, password, host, db, dump_file)
+        dump_cmd = self.dump_cmd_pattern % {
+            "user": user, "password": password,
+            "host": host, "db": db, "dump_file": dump_file
+        }
 
         os.system(dump_cmd)
 
@@ -89,6 +92,6 @@ class Dumper():
 def main():
     dumper = Dumper(
         "Simple MySQL dumper.",
-        "mysqldump -u %s -p%s -h %s %s > %s"
+        "mysqldump -u %(user)s -p%(password)s -h %(host)s %(db)s > %(dump_file)s"
     )
     dumper.run()
